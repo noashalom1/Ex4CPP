@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
+#include <unordered_set>
 
 #include "iterators/AscendingOrder.hpp"
 #include "iterators/DescendingOrder.hpp"
@@ -20,22 +21,29 @@ namespace containers
     private:
         std::vector<T> data;
         size_t index = 0;
+        std::unordered_multiset<T> fast_lookup;
+
+        friend class AbstractIterator<T>;
 
     public:
         void add(const T &value)
         {
             data.push_back(value);
+            fast_lookup.insert(value);
             ++index;
         }
 
         void remove(const T &value)
         {
-            auto original_size = data.size();
-            data.erase(std::remove(data.begin(), data.end(), value), data.end());
-            if (data.size() == original_size)
+            if (fast_lookup.count(value) == 0)
             {
-                throw std::runtime_error("Element not found");
+                throw std::runtime_error("Element was not found");
             }
+
+            data.erase(std::remove(data.begin(), data.end(), value), data.end());
+
+            fast_lookup.erase(value);
+
             ++index;
         }
 
@@ -60,16 +68,6 @@ namespace containers
         const std::vector<T> &get_data() const
         {
             return data;
-        }
-
-        std::vector<T> &get_data()
-        {
-            return data;
-        }
-
-        size_t get_index() const
-        {
-            return index;
         }
 
         AscendingOrder<T> Ascending() const

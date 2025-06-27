@@ -25,14 +25,16 @@ namespace containers
 
     public:
         AbstractIterator(const MyContainer<T> &cont)
-            : container(cont), current(0), expected_index(cont.get_index()) {}
+            : container(cont), current(0), expected_index(cont.index) {}
 
         AbstractIterator(const MyContainer<T> &cont, const std::vector<size_t> &idx, size_t pos)
-            : container(cont), indices(idx), current(pos), expected_index(cont.get_index()) {}
+            : container(cont), indices(idx), current(pos), expected_index(cont.index) {}
+
+        virtual ~AbstractIterator() = default;
 
         const T &operator*() const
         {
-            if (expected_index != container.get_index())
+            if (expected_index != container.index)
             {
                 throw std::runtime_error("Container was modified during iteration");
             }
@@ -45,7 +47,7 @@ namespace containers
 
         AbstractIterator &operator++()
         {
-            if (expected_index != container.get_index())
+            if (expected_index != container.index)
             {
                 throw std::runtime_error("Container was modified during iteration");
             }

@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX = g++  
-CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude
+CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude --coverage
 
 # Source and test files
 SRC = Demo.cpp
@@ -17,9 +17,6 @@ INCLUDES = include/MyContainer.hpp \
 # Output executables
 MAIN_EXEC = Main
 TEST_EXEC = Test
-
-# Doctest flags
-DOCTEST_FLAGS = -std=c++17 -Wall -Wextra
 
 # Default target
 all: $(MAIN_EXEC)
@@ -38,7 +35,17 @@ test: $(TESTS) $(INCLUDES)
 valgrind: $(TESTS) $(INCLUDES)
 	$(CXX) $(CXXFLAGS) $(TESTS) -o $(TEST_EXEC)
 	valgrind --leak-check=full ./$(TEST_EXEC)
-	
+
+# Coverage only on tests
+coverage:
+	rm -f *.gcno *.gcda *.gcov Test
+	$(CXX) $(CXXFLAGS) --coverage $(TESTS) -o $(TEST_EXEC)
+	./$(TEST_EXEC) > /dev/null
+	@echo "====== GCOV COVERAGE SUMMARY ======"
+	@gcov -b -c -o . Test-tests.gcno
+	@echo "\nTop Coverage Summary:"
+	@grep -E 'File|Lines executed' *.gcov | paste - - | column -t
+
 # Clean up generated files
 clean:
-	rm -f $(MAIN_EXEC) $(TEST_EXEC)
+	rm -f $(MAIN_EXEC) $(TEST_EXEC) *.gcno *.gcda *.gcov Test
