@@ -41,7 +41,7 @@ int main()
 
     std::cout << "\n--- Integers Container --- \n";
     std::cout << "\nData in the container: ";
-    std::cout << int_container << "\n"; // יציג עם סוגריים
+    std::cout << int_container << "\n"; 
 
     std::cout << "Integers - Ascending: ";
     for (const auto &it : int_container.Ascending())
