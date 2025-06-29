@@ -12,26 +12,40 @@ namespace containers
 {
 
     /**
-     * @brief Abstract base class for common iterator functionality.
+     * @brief Abstract base class for implementing custom iterators over MyContainer<T>.
+     *
+     * Provides core logic for iteration, modification detection, and bounds checking.
+     * Derived classes must implement the type_name() method.
+     *
+     * @tparam T Type of the elements in the container.
      */
     template <typename T>
     class AbstractIterator
     {
     protected:
-        const MyContainer<T> &container;
-        std::vector<size_t> indices;
-        size_t current;
-        size_t expected_index;
+        const MyContainer<T> &container; // Reference to the container being iterated.
+        std::vector<size_t> indices;     // A list of indices defining the order of iteration.
+        size_t current;                  // Current position in the indices vector.
+        size_t expected_index;           // Version of the container at the time of iterator creation.
 
     public:
+        /**
+         * @brief Constructs an iterator for the given container starting at index 0.
+         *
+         * @param cont The container to iterate over.
+         */
         AbstractIterator(const MyContainer<T> &cont)
             : container(cont), current(0), expected_index(cont.index) {}
 
-        AbstractIterator(const MyContainer<T> &cont, const std::vector<size_t> &idx, size_t pos)
-            : container(cont), indices(idx), current(pos), expected_index(cont.index) {}
+        virtual ~AbstractIterator() = default; // Virtual destructor.
 
-        virtual ~AbstractIterator() = default;
-
+        /**
+         * @brief Dereference operator to access the current element.
+         *
+         * @return const T& Reference to the current element.
+         * @throws std::runtime_error If the container was modified during iteration.
+         * @throws std::out_of_range If the iterator is out of bounds.
+         */
         const T &operator*() const
         {
             if (expected_index != container.index)
@@ -42,9 +56,16 @@ namespace containers
             {
                 throw std::out_of_range("Iterator out of bounds");
             }
-            return container.get_data()[indices[current]];
+            return container.data[indices[current]];
         }
 
+        /**
+         * @brief Prefix increment operator to advance to the next element.
+         *
+         * @return AbstractIterator& Reference to this iterator.
+         * @throws std::runtime_error If the container was modified during iteration.
+         * @throws std::out_of_range If the iterator is out of bounds.
+         */
         AbstractIterator &operator++()
         {
             if (expected_index != container.index)
@@ -59,8 +80,20 @@ namespace containers
             return *this;
         }
 
+        /**
+         * @brief Returns the type name of the concrete iterator.
+         *
+         * @return const char* The name of the derived iterator type.
+         */
         virtual const char *type_name() const = 0;
 
+        /**
+         * @brief Equality operator to compare two iterators.
+         *
+         * @param other Another iterator to compare with.
+         * @return true If both iterators are at the same position, on the same container, and of the same type.
+         * @return false Otherwise.
+         */
         bool operator==(const AbstractIterator &other) const
         {
             return current == other.current &&
@@ -68,6 +101,13 @@ namespace containers
                    &container == &(other.container);
         }
 
+        /**
+         * @brief Inequality operator to compare two iterators.
+         *
+         * @param other Another iterator to compare with.
+         * @return true If the iterators are not equal.
+         * @return false If the iterators are equal.
+         */
         bool operator!=(const AbstractIterator &other) const
         {
             return !(*this == other);
